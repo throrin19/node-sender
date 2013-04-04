@@ -1,0 +1,28 @@
+{
+  "name": "nodejs-push",
+  "version": "0.0.1",
+  "private" : true,
+  "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
+  "main": "sender.js",
+  "dependencies": {
+    "node-curl": "~0.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/throrin19/nodejs-push.git"
+  },
+  "keywords": [
+    "push",
+    "gcm",
+    "notification",
+    "mobile"
+  ],
+  "author": "throrin19",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "29d19a3684326464251ce5fcf3ea70d0255dc736"
+}
