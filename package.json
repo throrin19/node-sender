@@ -5,12 +5,10 @@
   "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
   "main": "sender.js",
   "dependencies": {
-    "node-curl": "~0.2.3"
+    "request": "*",
+    "underscore": "*"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/throrin19/nodejs-push.git"
