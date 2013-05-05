@@ -1,5 +1,5 @@
 {
-  "name": "nodejs-push",
+  "name": "node-sender",
   "version": "0.0.1",
   "private" : true,
   "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
