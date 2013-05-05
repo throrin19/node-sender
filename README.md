@@ -19,20 +19,22 @@ The source is available for download from GitHub.
 
 ### Android (GCM)
 
-    var Sender = require('node-sender');
+```javascript
+var Sender = require('node-sender');
 
-    var sender = new Sender();
+var sender = new Sender();
 
-    sender.send(
-        Sender.TYPE_ANDROID,                // OS type
-        { msge : "Test Message NodeJS" },   // message to send
-        "Registration Id",                  // phone registration id(s)
-        { apiKey : "Api-Key GCM" },         // settings
-        function(err, response){            // callback
-            console.log(err);
-            console.log(response);
-        }
-    );
+sender.send(
+    Sender.TYPE_ANDROID,                // OS type
+    { msge : "Test Message NodeJS" },   // message to send
+    "Registration Id",                  // phone registration id(s)
+    { apiKey : "Api-Key GCM" },         // settings
+    function(err, response){            // callback
+        console.log(err);
+        console.log(response);
+    }
+);
+```
 
 ### IOS
 
