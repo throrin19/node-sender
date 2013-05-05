@@ -11,7 +11,7 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/throrin19/nodejs-push.git"
+    "url": "https://github.com/throrin19/node-sender.git"
   },
   "keywords": [
     "push",
