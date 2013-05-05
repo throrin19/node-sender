@@ -58,8 +58,9 @@ Sender.PARAMS_DATA          = "data";
  * </ul>
  *
  * @return {MessageAbstract}
+ * @private
  */
-Sender.prototype.buildMessage = function(type, params){
+Sender.prototype._buildMessage = function(type, params){
     var mesg = null;
 
     switch(type){
@@ -100,9 +101,12 @@ Sender.prototype._buildMessageAndroid = function(params){
  * @param callback {function}
  */
 Sender.prototype.send = function(type, message, tokens, config, callback){
+
+    var buildMsge = this._buildMessage(type, message);
+
     switch(type){
         case Sender.TYPE_ANDROID :
-            this._sendAndroid(message, tokens, config, callback);
+            this._sendAndroid(buildMsge, tokens, config, callback);
             break;
         default :
             throw "Unknow Type";

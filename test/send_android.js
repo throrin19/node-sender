@@ -2,16 +2,13 @@ var Sender = require('../sender');
 
 var sender = new Sender();
 
-var messageAndroid = sender.buildMessage(Sender.TYPE_ANDROID, { msge: "Test Message NodeJS" });
-
 sender.send(
-    Sender.TYPE_ANDROID,
-    messageAndroid,
-    "registration ID here",
-    { apiKey : "API-KEY GCM" },
-    function(err, response){
+    Sender.TYPE_ANDROID,                // OS type
+    { msge : "Test Message NodeJS" },   // message to send
+    "Registration Id",                  // phone registration id(s)
+    { apiKey : "Api-Key GCM" },         // settings
+    function(err, response){            // callback
         console.log(err);
         console.log(response);
     }
 );
-
