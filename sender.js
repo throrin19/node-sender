@@ -1,87 +1,67 @@
 var PushMessageGcm  = require('./lib/message/gcm'),
     Gcm             = require('./lib/gcm'),
-    _               = require('underscore');
-
-
-var Sender = function(){
-
-}
-
-Sender.TYPE_ANDROID         = "android";
-Sender.TYPE_IOS             = "ios";
-Sender.TYPE_WP              = "wp";
-Sender.TYPE_BB              = "bb5";
-
-Sender.CONFIG_APIKEY        = "apiKey";
-Sender.CONFIG_PUSH          = "serverPush";
-Sender.CONFIG_FEEDBACK      = "serverFeedback";
-Sender.CONFIG_CERTIF        = "certif";
-Sender.CONFIG_PASSWORD      = "password";
-
-Sender.PARAMS_MESSAGE       = "msge";
-Sender.PARAMS_MESSAGE_BB    = "msg";
-Sender.PARAMS_TITLE         = "title";
-Sender.PARAMS_DATA          = "data";
+    _               = require('underscore'),
+    constants       = require('./lib/const.js');
 
 /**
  * Creating the message
  * Returns the message to send.
  *
- * @param type {string}
- * @param params {object|string}
- *
  * <ul>
- *  <li>For Android, the parameters depend on what is expected by the mobile.</li>
+ *  <li>For Android, the parameters depend on what is expected by your applications.</li>
  *  <li>For WindowsPhone, the parameters must be entered as follows:
  * <code>
  * {
- *     Sender::PARAMS_TITLE => "title",
- *     Sender::PARAMS_MESSAGE => "messagee",
- *     Sender::PARAMS_DATA => "Data (Uri)"
+ *     title : "title",
+ *     msge :"messagee",
+ *     data : "Data (Uri)"
  * }
  * </code></li>
  * <li>For IOS, the parameters must be entered like this:
  * <code>
  * {
- *     Sender::PARAMS_MESSAGE => "alert Message"
- *     Sender::PARAMS_DATA => array(
- *          "key" => mixed value, ...
+ *     msge : "alert Message"
+ *     data : array(
+ *          key1 : mixed value,
+ *          ...
  *     )
  * }
  * </code></li>
  * <li>For Blackberry, a single data is required:
  * * <code>
  * {
- *      Sender::PARAMS_MESSAGE => "Message"
+ *      msge : "Message"
  * }
  * </code></li>
  * </ul>
  *
- * @return {MessageAbstract}
+ * @param   {string}            type            Message Type (android|ios|wp|bb5)
+ * @param   {object|string}     params          Message params
+ * @return  {MessageAbstract}                   Message Object
  * @private
  */
-Sender.prototype._buildMessage = function(type, params){
+var _buildMessage = function(type, params){
     var mesg = null;
 
     switch(type){
-        case Sender.TYPE_ANDROID :
-            mesg = this._buildMessageAndroid(params);
+        case constants.TYPE_ANDROID :
+            mesg = _buildMessageAndroid(params);
             break;
         default :
             throw "Unknow Type";
     }
 
     return mesg;
-}
+};
 
 /**
  * Lets create our preconfigured android messages
  *
- * @param params
- * @returns {PushMessageGcm}
+ * @param   {string|object}    params           Message Params
+ * @returns {PushMessageGcm}                    Message Object
  * @private
  */
-Sender.prototype._buildMessageAndroid = function(params){
+var _buildMessageAndroid = function(params){
     var mesg = new PushMessageGcm();
     mesg.setId(new Date().getTime());
     if(typeof params != 'undefined' && params != null){
@@ -89,43 +69,21 @@ Sender.prototype._buildMessageAndroid = function(params){
     }
 
     return mesg;
-}
-
-/**
- * Function called to send a message on device(s).
- *
- * @param type {string}
- * @param message {MessageAbstract}
- * @param tokens {Array|string}
- * @param config {object}
- * @param callback {function}
- */
-Sender.prototype.send = function(type, message, tokens, config, callback){
-
-    var buildMsge = this._buildMessage(type, message);
-
-    switch(type){
-        case Sender.TYPE_ANDROID :
-            this._sendAndroid(buildMsge, tokens, config, callback);
-            break;
-        default :
-            throw "Unknow Type";
-    }
-}
+};
 
 /**
  * Function called to send a message on Android device(s)
  *
- * @param message {PushMessageGcm}
- * @param tokens {string|Array}
- * @param config {object}
- * @param callback {function}
+ * @param {PushMessageGcm}      message             Push Message Object
+ * @param {string|Array}        tokens              Push Tokens
+ * @param {object}              config              Push Config
+ * @param {function}            callback            Callback Function
  * @private
  */
-Sender.prototype._sendAndroid = function(message, tokens, config, callback){
-    if(typeof config == 'object' && typeof config[Sender.CONFIG_APIKEY] != 'undefined'){
+var _sendAndroid = function(message, tokens, config, callback){
+    if(typeof config == 'object' && typeof config[constants.CONFIG_APIKEY] != 'undefined'){
         var gcm = new Gcm();
-        gcm.setApiKey(config[Sender.CONFIG_APIKEY]);
+        gcm.setApiKey(config[constants.CONFIG_APIKEY]);
 
         if(typeof tokens == 'array'){
             _.each(tokens, function(token){
@@ -143,6 +101,29 @@ Sender.prototype._sendAndroid = function(message, tokens, config, callback){
     }else{
         callback('invalid config');
     }
-}
+};
 
-module.exports = Sender;
+module.exports.constants = constants;
+
+/**
+ * Function called to send a message on device(s).
+ *
+ * @param {object}              params              Sender params
+ * @param {string}              params.type         Sender type
+ * @param {object}              params.message      Sender Message
+ * @param {Array|string}        params.tokens       Devices tokens
+ * @param {object}              params.config       Sender Config
+ * @param {function}            callback            Callback Function
+ */
+module.exports.send = function(params, callback){ //function(type, message, tokens, config, callback){
+
+    var buildMsge = _buildMessage(params.type, params.message);
+
+    switch(params.type){
+        case constants.TYPE_ANDROID :
+            _sendAndroid(buildMsge, params.tokens, params.config, callback);
+            break;
+        default :
+            throw "Unknow Type";
+    }
+};
