@@ -19,16 +19,18 @@ Sender.send({
     */
 
 
-var toto = Sender._buildMessage(Sender.constants.TYPE_BB, {
-        message : {
-            msge : "Node Sender Test Message"
-        },
-
+var toto = Sender.send({
+    type : Sender.constants.TYPE_BB,
+    message : {
+        msge : "Node Sender Test Message"
+    },
     tokens : "Registration ID here or array IDs",
     config : {
-    apiKey : "GCM Api-KEY"
-
+        apiKey : "GCM Api-KEY"
     }
+}, function(err, response){
+    console.log(err);
+    console.log(response);
 });
 
 

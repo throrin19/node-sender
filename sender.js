@@ -147,7 +147,7 @@ var _buildMessageBlackBerry = function(params){
 var _sendBlackBerry = function(message, tokens, config, callback){
     var result = null;
     if(
-        config != null && $.isArray(config) &&
+        config != null && _.isArray(config) &&
         config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
         config.hasOwnProperty(constants.CONFIG_APIKEY)
 
