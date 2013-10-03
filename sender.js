@@ -1,7 +1,12 @@
 var PushMessageGcm  = require('./lib/message/gcm'),
     Gcm             = require('./lib/gcm'),
+    PushMessageBpss  = require('./lib/message/bpss'),
+    Bpss             = require('./lib/bpss'),
+    PushMessageMpns  = require('./lib/message/mpns'),
+    Mpns             = require('./lib/mpns'),
     _               = require('underscore'),
-    constants       = require('./lib/const.js');
+    constants       = require('./lib/const.js'),
+    ToastMessage    = require("./lib/message/mpns/toast");
 
 /**
  * Creating the message
@@ -47,6 +52,15 @@ var _buildMessage = function(type, params){
         case constants.TYPE_ANDROID :
             mesg = _buildMessageAndroid(params);
             break;
+
+        case constants.TYPE_BB :
+            mesg = _buildMessageBlackBerry(params);
+            break;
+
+        case constants.TYPE_WP :
+            mesg = _buildMessageWindowsPhone(params);
+            break;
+
         default :
             throw "Unknow Type";
     }
@@ -103,6 +117,129 @@ var _sendAndroid = function(message, tokens, config, callback){
     }
 };
 
+
+/**
+ * Lets create our preconfigured BlackBerry messages
+ *
+ * @param   {string|object}    params           Message Params
+ * @returns {PushMessageGcm}                    Message Object
+ * @private
+ */
+var _buildMessageBlackBerry = function(params){
+    var mesg = new PushMessageBpss();
+    mesg.setId(new Date().getTime());
+    if(typeof params != 'undefined' && params != null){
+        mesg.setData(params);
+    }
+
+    return mesg;
+};
+
+/**
+ * Function called to send a message on BlackBerry device(s)
+ *
+ * @param {PushMessageBpss}      message             Push Message Object
+ * @param {string|Array}        tokens              Push Tokens
+ * @param {object}              config              Push Config
+ * @param {function}            callback            Callback Function
+ * @private
+ */
+var _sendBlackBerry = function(message, tokens, config, callback){
+    var result = null;
+    if(
+        config != null && $.isArray(config) &&
+        config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
+        config.hasOwnProperty(constants.CONFIG_APIKEY)
+
+        )
+    {
+        message.setAppId( config[constants.CONFIG_APIKEY] );
+        bpss = new Bpss();
+        bpss.setApiKey(config[constants.CONFIG_APIKEY]);
+        bpss.setPassword(config[constants.CONFIG_PASSWORD]);
+
+        if( ! $.isArray(tokens) ){
+            tokens = new Array(tokens);
+        }
+
+        _.each(tokens , function(token){
+            message.addToken(token);
+        });
+
+        result = bpss.send(message);
+        return result;
+    }else{
+        throw "Les champs de configuration requis pour Blackberry n'ont pas tous été saisis";
+    }
+
+
+};
+
+
+/**
+ * Lets create our preconfigured BlackBerry messages
+ *
+ * @param   {string|object}    params           Message Params
+ * @returns {PushMessageGcm}                    Message Object
+ * @private
+ */
+var _buildMessageWindowsPhone = function(params){
+
+    var mesg = new ToastMessage();
+
+    if( params.hasOwnProperty( constants.PARAMS_TITLE  ) || params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
+        if( params.hasOwnProperty( constants.PARAMS_TITLE  ) ){
+            mesg.setTitle( params[constants.PARAMS_TITLE] );
+        }
+        if( params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
+            mesg.setMessage( params[constants.PARAMS_MESSAGE] );
+        }
+    }
+    else{
+        throw "Les paramètres title et msge n'ont pas été saisis";
+    }
+
+
+    if( params.hasOwnProperty( constants.PARAMS_DATA )  ){
+        if( params[constants.PARAMS_DATA].length <= 250 ){
+            mesg.setParams(params[constants.PARAMS_DATA]);
+        }
+        else{
+            throw "data dépasse 250 caractères";
+        }
+    }
+
+    return mesg;
+
+};
+
+/**
+ * Function called to send a message on BlackBerry device(s)
+ *
+ * @param {PushMessageBpss}      message             Push Message Object
+ * @param {string|Array}        tokens              Push Tokens
+ * @param {object}              config              Push Config
+ * @param {function}            callback            Callback Function
+ * @private
+ */
+var _sendWP7Toast = function(message, tokens,  callback){
+
+        var mpns = new Mpns();
+
+        if( ! $.isArray(tokens)){
+            tokens = new Array(tokens);
+        }
+
+
+        _.each( tokens, function( elem_token ){
+            message.setToken(elem_token);
+            mpns.send( message );
+        });
+
+};
+
+
+
 module.exports.constants = constants;
 
 /**
@@ -122,6 +259,14 @@ module.exports.send = function(params, callback){ //function(type, message, toke
     switch(params.type){
         case constants.TYPE_ANDROID :
             _sendAndroid(buildMsge, params.tokens, params.config, callback);
+            break;
+
+        case constants.TYPE_BB :
+            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
+            break;
+
+        case constants.TYPE_WP :
+            _sendWP7Toast(buildMsge, params.tokens, callback);
             break;
         default :
             throw "Unknow Type";
