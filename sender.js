@@ -130,6 +130,8 @@ var _buildMessageBlackBerry = function(params){
     mesg.setId(new Date().getTime());
     if(typeof params != 'undefined' && params != null){
         mesg.setData(params);
+        console.log("params");
+        console.log(params);
     }
 
     return mesg;
@@ -147,7 +149,7 @@ var _buildMessageBlackBerry = function(params){
 var _sendBlackBerry = function(message, tokens, config, callback){
     var result = null;
     if(
-        config != null && _.isArray(config) &&
+        config != null  &&
         config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
         config.hasOwnProperty(constants.CONFIG_APIKEY)
 
@@ -158,7 +160,7 @@ var _sendBlackBerry = function(message, tokens, config, callback){
         bpss.setApiKey(config[constants.CONFIG_APIKEY]);
         bpss.setPassword(config[constants.CONFIG_PASSWORD]);
 
-        if( ! $.isArray(tokens) ){
+        if( ! _.isArray(tokens) ){
             tokens = new Array(tokens);
         }
 
@@ -166,6 +168,8 @@ var _sendBlackBerry = function(message, tokens, config, callback){
             message.addToken(token);
         });
 
+
+        console.log(message.getXmlPayload());
         result = bpss.send(message);
         return result;
     }else{
@@ -185,13 +189,18 @@ var _sendBlackBerry = function(message, tokens, config, callback){
  */
 var _buildMessageWindowsPhone = function(params){
 
-    var mesg = new ToastMessage();
+    var mesg = new ToastMessage() ;
+
+    console.log(ToastMessage);
 
     if( params.hasOwnProperty( constants.PARAMS_TITLE  ) || params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
         if( params.hasOwnProperty( constants.PARAMS_TITLE  ) ){
             mesg.setTitle( params[constants.PARAMS_TITLE] );
+
+            throw "wewe";
         }
         if( params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
+
             mesg.setMessage( params[constants.PARAMS_MESSAGE] );
         }
     }

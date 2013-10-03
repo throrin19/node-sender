@@ -1,32 +1,15 @@
 var Sender = require('../sender');
 
 
-/*
-Sender.send({
-    type : Sender.constants.TYPE_BB,
-    message : {
-        msge : "Node Sender Test Message"
-    },
-    tokens : "Registration ID here or array IDs",
-    config : {
-        apiKey : "GCM Api-KEY"
-    }
-}, function(err, response){
-    console.log(err);
-    console.log(response);
-});
-
-    */
-
-
 var toto = Sender.send({
     type : Sender.constants.TYPE_BB,
     message : {
-        msge : "Node Sender Test Message"
+        "msge" : "Node Sender Test Message"
     },
     tokens : "Registration ID here or array IDs",
     config : {
-        apiKey : "GCM Api-KEY"
+        apiKey : "GCM Api-KEY",
+        password : "PASSWORD"
     }
 }, function(err, response){
     console.log(err);
