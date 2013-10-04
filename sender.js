@@ -240,7 +240,7 @@ var _sendWP7Toast = function(message, tokens,  callback){
 
 
         _.each( tokens, function( elem_token ){
-            message.setToken(elem_token);
+            message.setTokenMpns(elem_token);
             mpns.send( message );
         });
 

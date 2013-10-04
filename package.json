@@ -1,12 +1,13 @@
 {
   "name": "node-sender",
   "version": "0.0.1",
-  "private" : true,
+  "private": true,
   "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
   "main": "sender.js",
   "dependencies": {
     "request": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "iconv": "~2.0.7"
   },
   "devDependencies": {},
   "repository": {
