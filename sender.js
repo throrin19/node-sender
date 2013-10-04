@@ -2,7 +2,7 @@ var PushMessageGcm  = require('./lib/message/gcm'),
     Gcm             = require('./lib/gcm'),
     PushMessageBpss  = require('./lib/message/bpss'),
     Bpss             = require('./lib/bpss'),
-    PushMessageMpns  = require('./lib/message/mpns'),
+    PushMessageMpns  = require('./lib/message/mpns.js'),
     Mpns             = require('./lib/mpns'),
     _               = require('underscore'),
     constants       = require('./lib/const.js'),
@@ -170,6 +170,7 @@ var _sendBlackBerry = function(message, tokens, config, callback){
 
 
         console.log(message.getXmlPayload());
+
         result = bpss.send(message);
         return result;
     }else{
@@ -191,17 +192,15 @@ var _buildMessageWindowsPhone = function(params){
 
     var mesg = new ToastMessage() ;
 
-    console.log(ToastMessage);
+    if( params.hasOwnProperty( constants.PARAMS_TITLE  ) || params.message.hasOwnProperty( constants.PARAMS_MESSAGE) ){
 
-    if( params.hasOwnProperty( constants.PARAMS_TITLE  ) || params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
         if( params.hasOwnProperty( constants.PARAMS_TITLE  ) ){
             mesg.setTitle( params[constants.PARAMS_TITLE] );
 
-            throw "wewe";
         }
-        if( params.hasOwnProperty( constants.PARAMS_MESSAGE) ){
+        if( params.message.hasOwnProperty( constants.PARAMS_MESSAGE) ){
 
-            mesg.setMessage( params[constants.PARAMS_MESSAGE] );
+            mesg.setMessage( params.message[constants.PARAMS_MESSAGE] );
         }
     }
     else{
@@ -235,7 +234,7 @@ var _sendWP7Toast = function(message, tokens,  callback){
 
         var mpns = new Mpns();
 
-        if( ! $.isArray(tokens)){
+        if( ! _.isArray(tokens)){
             tokens = new Array(tokens);
         }
 
@@ -263,18 +262,21 @@ module.exports.constants = constants;
  */
 module.exports.send = function(params, callback){ //function(type, message, tokens, config, callback){
 
-    var buildMsge = _buildMessage(params.type, params.message);
+
 
     switch(params.type){
         case constants.TYPE_ANDROID :
+            var buildMsge = _buildMessage(params.type, params.message);
             _sendAndroid(buildMsge, params.tokens, params.config, callback);
             break;
 
         case constants.TYPE_BB :
+            var buildMsge = _buildMessage(params.type, params.message);
             _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
             break;
 
         case constants.TYPE_WP :
+            var buildMsge = _buildMessage(params.type, params);
             _sendWP7Toast(buildMsge, params.tokens, callback);
             break;
         default :

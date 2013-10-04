@@ -6,7 +6,7 @@ var toto = Sender.send({
     message : {
         "msge" : "Node Sender Test Message"
     },
-    tokens : "Registration ID here or array IDs",
+    tokens : ["token1" ,"token2" ,"token3"],
     config : {
         apiKey : "GCM Api-KEY",
         password : "PASSWORD"
