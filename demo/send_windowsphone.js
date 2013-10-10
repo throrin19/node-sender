@@ -6,8 +6,8 @@ var toto = Sender.send({
     message : {
         msge : "Message "
     },
-    title  : "titre du ",
-    tokens : ["http://db3.notify.live.net/throttledthirdparty/01.00/AAEABg_0lnViR4neLSbyVGgLAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQGoId9KEtGiQYMPlDLmuGLHAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQFFm7vZbJDrSLdf5Y6h-8uCAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQEqwtf00FpGQLzGGTtlOf65AgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ","http://db3.notify.live.net/throttledthirdparty/01.00/AAEABg_0lnViR4neLSbyVGgLAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQGoId9KEtGiQYMPlDLmuGLHAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQFFm7vZbJDrSLdf5Y6h-8uCAgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ","http://am3.notify.live.net/throttledthirdparty/01.00/AQEqwtf00FpGQLzGGTtlOf65AgAAAAADAQAAAAQUZm52OjIzOEQ2NDJDRkI5MEVFMEQFBkVVV0UwMQ"]
+    title  : "titre du push",
+    tokens : ["yourtoken, ..."]
 
 }, function(err, response){
     console.log(err);
