@@ -6,7 +6,10 @@ var PushMessageGcm  = require('./lib/message/gcm'),
     Mpns             = require('./lib/mpns'),
     _               = require('underscore'),
     constants       = require('./lib/const.js'),
+    bbp             = require('blackberry-push'),
     ToastMessage    = require("./lib/message/mpns/toast");
+
+
 
 /**
  * Creating the message
@@ -101,10 +104,10 @@ var _sendAndroid = function(message, tokens, config, callback){
 
         if(typeof tokens == 'array'){
             _.each(tokens, function(token){
-                message.addToken(token)
+                message.setTokens(token)
             });
         }else if(typeof tokens == 'string'){
-            message.addToken(tokens);
+            message.setTokens(tokens);
         }
 
         try{
@@ -271,8 +274,34 @@ module.exports.send = function(params, callback){ //function(type, message, toke
             break;
 
         case constants.TYPE_BB :
+
+/*
+            push = bbp(url, appID, password);
+
+            push('pin', 'hello world', function(err, result) {
+                console.log(result);
+            });
+*/
+
+
+            /*
+            var url_bb = 'https://cp40.pushapi.na.blackberry.com/mss/PD_pushRequest',
+                apikey = params.config.apiKey,
+                password = params.config.password ;
+
+            var push = bbp(url_bb, apikey, password);
+
+            push(params.tokens, params.message.msge, function(err, result) {
+                console.log(result);
+            });
+*/
+
+
             var buildMsge = _buildMessage(params.type, params.message);
+
             _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
+
+
             break;
 
         case constants.TYPE_WP :
