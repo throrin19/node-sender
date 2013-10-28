@@ -275,31 +275,23 @@ module.exports.send = function(params, callback){ //function(type, message, toke
 
         case constants.TYPE_BB :
 
-/*
-            push = bbp(url, appID, password);
 
-            push('pin', 'hello world', function(err, result) {
-                console.log(result);
-            });
-*/
-
-
-            /*
             var url_bb = 'https://cp40.pushapi.na.blackberry.com/mss/PD_pushRequest',
                 apikey = params.config.apiKey,
                 password = params.config.password ;
 
+
             var push = bbp(url_bb, apikey, password);
 
             push(params.tokens, params.message.msge, function(err, result) {
+                console.log(err);
                 console.log(result);
             });
-*/
 
 
-            var buildMsge = _buildMessage(params.type, params.message);
+//            var buildMsge = _buildMessage(params.type, params.message);
 
-            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
+//            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
 
 
             break;
