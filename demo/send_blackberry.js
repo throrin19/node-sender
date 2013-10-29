@@ -6,10 +6,10 @@ Sender.send({
     message : {
         "msge" : "Message de test du serveur de push Blackberry"
     },
-    tokens : ["your token1, yourtoken2,"],
+    tokens : ["635282030"],
     config : {
-        apiKey : "your api key",
-        password : "your password"
+        apiKey : "40-82e7a73596il7rkI29933r3M8884y4a5R21e8",
+        password : "3S4T7u9m"
     }
 }, function(err, response){
     console.log(err);
@@ -18,3 +18,4 @@ Sender.send({
 
 
 
+//your token
