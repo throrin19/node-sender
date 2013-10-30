@@ -1,7 +1,7 @@
 var Sender = require('../sender');
 var https = require("https");
 
-https.globalAgent.options.secureProtocol = 'SSLv3_method';
+
 
 
 Sender.send({
