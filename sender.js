@@ -6,7 +6,6 @@ var PushMessageGcm  = require('./lib/message/gcm'),
     Mpns             = require('./lib/mpns'),
     _               = require('underscore'),
     constants       = require('./lib/const.js'),
-    bbp             = require('blackberry-push'),
     ToastMessage    = require("./lib/message/mpns/toast");
 
 
@@ -133,8 +132,6 @@ var _buildMessageBlackBerry = function(params){
     mesg.setId(new Date().getTime());
     if(typeof params != 'undefined' && params != null){
         mesg.setData(params);
-        console.log("params");
-        console.log(params);
     }
 
     return mesg;
@@ -170,9 +167,6 @@ var _sendBlackBerry = function(message, tokens, config, callback){
         _.each(tokens , function(token){
             message.addToken(token);
         });
-
-
-        console.log(message.getXmlPayload());
 
         result = bpss.send(message);
         return result;
@@ -275,25 +269,8 @@ module.exports.send = function(params, callback){ //function(type, message, toke
 
         case constants.TYPE_BB :
 
-
-            var url_bb = 'https://cp40.pushapi.na.blackberry.com/mss/PD_pushRequest',
-                apikey = params.config.apiKey,
-                password = params.config.password ;
-
-
-            var push = bbp(url_bb, apikey, password);
-
-            push(params.tokens, params.message.msge, function(err, result) {
-                console.log(err);
-                console.log(result);
-            });
-
-
-//            var buildMsge = _buildMessage(params.type, params.message);
-
-//            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
-
-
+            var buildMsge = _buildMessage(params.type, params.message);
+            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
             break;
 
         case constants.TYPE_WP :
