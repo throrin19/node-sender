@@ -3,9 +3,9 @@ var Sender = require('../sender');
 Sender.send({
     type : Sender.constants.TYPE_ANDROID,
     message : {
-        msge : "Node Sender Test Message"
+        msge : "Test android push"
     },
-    tokens : "Registration ID here or array IDs",
+    tokens : ["your token"],
     config : {
         apiKey : "GCM Api-KEY"
     }
