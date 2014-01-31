@@ -11,9 +11,11 @@ NodeJS-push can be easily and simply send push notifications on major existing m
 
 * [Apache Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-## Download
+## Install
 
-The source is available for download from GitHub. 
+```
+npm install node-sender
+```
 
 ## Quick Examples 
 

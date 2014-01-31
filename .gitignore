@@ -1,2 +1,19 @@
 .idea/
 node_modules/
+
+logs/
+
+### Node ###
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids/
+results/
+
+npm-debug.log
