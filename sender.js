@@ -97,25 +97,38 @@ var _buildMessageAndroid = function(params){
  * @private
  */
 var _sendAndroid = function(message, tokens, config, callback){
-    if(typeof config == 'object' && typeof config[constants.CONFIG_APIKEY] != 'undefined'){
+//    if(typeof config == 'object' && typeof config[constants.CONFIG_APIKEY] != 'undefined'){
         var gcm = new Gcm();
-        gcm.setApiKey(config[constants.CONFIG_APIKEY]);
+//        gcm.setApiKey(config[constants.CONFIG_APIKEY]);
 
-        if(typeof tokens == 'array'){
-            _.each(tokens, function(token){
-                message.setTokens(token)
-            });
-        }else if(typeof tokens == 'string'){
-            message.setTokens(tokens);
-        }
+    message.clearTokens();
+    if(typeof tokens == 'object'){
+        _.each(tokens, function(token){
+            var apikey = token.split("@!!@")[1];
+            var item_token  = token.split("@!!@")[0];
 
-        try{
-            gcm.send(message, callback);
-        }catch(e){
-            callback(e);
+            if( typeof apikey != "undefined"){
+                gcm.setApiKey( apikey );
+            }
+
+            message.addToken(item_token);
+        });
+    }else if(typeof tokens == 'string'){
+
+        var apikey = tokens.split("@!!@")[1];
+        var item_token  = tokens.split("@!!@")[0];
+        message.addToken(item_token);
+
+        if( typeof apikey != "undefined"){
+            gcm.setApiKey( apikey );
         }
-    }else{
-        callback('invalid config');
+    }
+
+
+    try{
+        gcm.send(message, callback);
+    }catch(e){
+        callback(e);
     }
 };
 
@@ -150,8 +163,8 @@ var _sendBlackBerry = function(message, tokens, config, callback){
     var result = null;
     if(
         config != null  &&
-        config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
-        config.hasOwnProperty(constants.CONFIG_APIKEY)
+            config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
+            config.hasOwnProperty(constants.CONFIG_APIKEY)
 
         )
     {
@@ -159,6 +172,9 @@ var _sendBlackBerry = function(message, tokens, config, callback){
         bpss = new Bpss();
         bpss.setApiKey(config[constants.CONFIG_APIKEY]);
         bpss.setPassword(config[constants.CONFIG_PASSWORD]);
+
+
+        message.clearTokens();
 
         if( ! _.isArray(tokens) ){
             tokens = new Array(tokens);
@@ -168,13 +184,19 @@ var _sendBlackBerry = function(message, tokens, config, callback){
             message.addToken(token);
         });
 
-        result = bpss.send(message);
+//        message.setTokens( tokens );
+
+
+        try{
+            result = bpss.send(message , callback);
+        }catch(e){
+            callback(e);
+        }
+
         return result;
     }else{
         throw "Les champs de configuration requis pour Blackberry n'ont pas tous été saisis";
     }
-
-
 };
 
 
@@ -229,17 +251,24 @@ var _buildMessageWindowsPhone = function(params){
  */
 var _sendWP7Toast = function(message, tokens,  callback){
 
-        var mpns = new Mpns();
+    var mpns = new Mpns();
 
-        if( ! _.isArray(tokens)){
-            tokens = new Array(tokens);
+    if( ! _.isArray(tokens)){
+        tokens = new Array(tokens);
+    }
+
+
+    _.each( tokens, function( elem_token ){
+        message.setTokenMpns(elem_token);
+
+        try{
+            mpns.send( message , callback );
+        }catch(e){
+            callback(e);
         }
 
+    });
 
-        _.each( tokens, function( elem_token ){
-            message.setTokenMpns(elem_token);
-            mpns.send( message );
-        });
 
 };
 
