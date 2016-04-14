@@ -47,7 +47,7 @@ var log = bunyan.createLogger({
  * * <code>
  * {
  *      msge : "Message"
- * }
+ * }s
  * </code></li>
  * </ul>
  *
