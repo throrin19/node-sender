@@ -7,7 +7,10 @@ var PushMessageGcm = require('./lib/message/gcm'),
     _ = require('underscore'),
     constants = require('./lib/const.js'),
     ToastMessage = require("./lib/message/mpns/toast"),
-    Wns = require("./lib/wns");
+    Wns = require("./lib/wns"),
+    Device = require("./lib/device"),
+    Connection = require("./lib/connection"),
+    Notification = require("./lib/notification");
 
 /**
  * Creating the message
@@ -236,9 +239,8 @@ var _buildMessageWindowsPhone = function (params) {
 /**
  * Function called to send a message on BlackBerry device(s)
  *
- * @param {PushMessageBpss}      message             Push Message Object
+ * @param {PushMessageBpss}     message             Push Message Object
  * @param {string|Array}        tokens              Push Tokens
- * @param {object}              config              Push Config
  * @param {function}            callback            Callback Function
  * @private
  * @Deprecated
@@ -304,6 +306,28 @@ var _sendWP = function (message, tokens, callback) {
     })
 };
 
+/**
+ * Function called to send a message on iOS device
+ *
+ * @param {object} message
+ * @param {string[]} tokens
+ * @param {object} config
+ * @param {function} callback
+ * @private
+ */
+var _sendIOs = function (message, tokens, config, callback) {
+    var notification = new Notification();
+    var apnConnection = new Connection(config);
+    notification.expiry = message.expiry;
+    notification.badge = message.badge;
+    notification.sound = message.sound;
+    notification.alert = message.alert;
+    _.each(tokens, function (token) {
+        var myDevice = new Device(token);
+        apnConnection.pushNotification(notification,myDevice).then(callback);
+    })
+};
+
 module.exports.constants = constants;
 
 /**
@@ -312,24 +336,25 @@ module.exports.constants = constants;
  * @param {object}              params              Sender params
  * @param {string}              params.type         Sender type
  * @param {object}              params.message      Sender Message
- * @param {Array|string}        params.tokens       Devices tokens
+ * @param {object|string[]}     params.tokens       Devices tokens
  * @param {object}              params.config       Sender Config
  * @param {function}            callback            Callback Function
  */
 module.exports.send = function (params, callback) { //function(type, message, tokens, config, callback){
-
     switch (params.type) {
         case constants.TYPE_ANDROID :
             var buildMsge = _buildMessage(params.type, params.message);
             _sendAndroid(buildMsge, params.tokens, params.config, callback);
             break;
-        //case constants.TYPE_BB :
-        //
-        //    var buildMsge = _buildMessage(params.type, params.message);
-        //    _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
-        //    break;
+        case constants.TYPE_BB :
+            var buildMsge = _buildMessage(params.type, params.message);
+            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
+            break;
         case constants.TYPE_WP :
             _sendWP(params.message, params.tokens, callback);
+            break;
+        case constants.TYPE_IOS :
+            _sendIOs(params.message, params.tokens, params.config, callback);
             break;
         default :
             throw "Unknow Type";

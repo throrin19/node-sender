@@ -7,7 +7,11 @@ var toto = Sender.send({
         msge : "Message "
     },
     title  : "titre du push",
-    tokens : ["yourtoken, ..."]
+    tokens : {
+        sid : "your sid",
+        secret : "your secret",
+        url : ["tokenUrl,...."]
+    }
 
 }, function(err, response){
     console.log(err);
