@@ -6,7 +6,6 @@ var toto = Sender.send({
     message : {
         msge : "Message "
     },
-    title  : "titre du push",
     tokens : {
         sid : "your sid",
         secret : "your secret",

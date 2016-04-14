@@ -1,16 +1,25 @@
+'use strict';
+
 var PushMessageGcm = require('./lib/message/gcm'),
     Gcm = require('./lib/gcm'),
     PushMessageBpss = require('./lib/message/bpss'),
     Bpss = require('./lib/bpss'),
-    PushMessageMpns = require('./lib/message/mpns.js'),
-    Mpns = require('./lib/mpns'),
+//PushMessageMpns = require('./lib/message/mpns.js'),
+//Mpns = require('./lib/mpns'),
     _ = require('underscore'),
     constants = require('./lib/const.js'),
     ToastMessage = require("./lib/message/mpns/toast"),
     Wns = require("./lib/wns"),
     Device = require("./lib/device"),
     Connection = require("./lib/connection"),
-    Notification = require("./lib/notification");
+    Notification = require("./lib/notification"),
+    bunyan = require('bunyan');
+
+var log = bunyan.createLogger({
+    name  : "node-sender",
+    level : "debug",
+    src   : true
+});
 
 /**
  * Creating the message
@@ -160,40 +169,40 @@ var _buildMessageBlackBerry = function (params) {
  * @Deprecated
  */
 var _sendBlackBerry = function (message, tokens, config, callback) {
-    var result = null;
-    if (
-        config != null &&
-        config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
-        config.hasOwnProperty(constants.CONFIG_APIKEY)
-
-    ) {
-        message.setAppId(config[constants.CONFIG_APIKEY]);
-        bpss = new Bpss();
-        bpss.setApiKey(config[constants.CONFIG_APIKEY]);
-        bpss.setPassword(config[constants.CONFIG_PASSWORD]);
-
-        message.clearTokens();
-
-        if (!_.isArray(tokens)) {
-            tokens = new Array(tokens);
-        }
-
-        _.each(tokens, function (token) {
-            message.addToken(token);
-        });
-
-//        message.setTokens( tokens );
-
-        try {
-            result = bpss.send(message, callback);
-        } catch (e) {
-            callback(e);
-        }
-
-        return result;
-    } else {
-        throw "Les champs de configuration requis pour Blackberry n'ont pas tous été saisis";
-    }
+//    var result = null;
+//    if (
+//        config != null &&
+//        config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
+//        config.hasOwnProperty(constants.CONFIG_APIKEY)
+//
+//    ) {
+//        message.setAppId(config[constants.CONFIG_APIKEY]);
+//        bpss = new Bpss();
+//        bpss.setApiKey(config[constants.CONFIG_APIKEY]);
+//        bpss.setPassword(config[constants.CONFIG_PASSWORD]);
+//
+//        message.clearTokens();
+//
+//        if (!_.isArray(tokens)) {
+//            tokens = new Array(tokens);
+//        }
+//
+//        _.each(tokens, function (token) {
+//            message.addToken(token);
+//        });
+//
+////        message.setTokens( tokens );
+//
+//        try {
+//            result = bpss.send(message, callback);
+//        } catch (e) {
+//            callback(e);
+//        }
+//
+//        return result;
+//    } else {
+//        throw "Les champs de configuration requis pour Blackberry n'ont pas tous été saisis";
+//    }
 };
 
 /**
@@ -206,33 +215,33 @@ var _sendBlackBerry = function (message, tokens, config, callback) {
  */
 var _buildMessageWindowsPhone = function (params) {
 
-    var mesg = new ToastMessage();
-
-    if (params.hasOwnProperty(constants.PARAMS_TITLE) || params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
-
-        if (params.hasOwnProperty(constants.PARAMS_TITLE)) {
-            mesg.setTitle(params[constants.PARAMS_TITLE]);
-
-        }
-        if (params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
-
-            mesg.setMessage(params.message[constants.PARAMS_MESSAGE]);
-        }
-    }
-    else {
-        throw "Les paramètres title et msge n'ont pas été saisis";
-    }
-
-    if (params.hasOwnProperty(constants.PARAMS_DATA)) {
-        if (params[constants.PARAMS_DATA].length <= 250) {
-            mesg.setParams(params[constants.PARAMS_DATA]);
-        }
-        else {
-            throw "data dépasse 250 caractères";
-        }
-    }
-
-    return mesg;
+    //var mesg = new ToastMessage();
+    //
+    //if (params.hasOwnProperty(constants.PARAMS_TITLE) || params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
+    //
+    //    if (params.hasOwnProperty(constants.PARAMS_TITLE)) {
+    //        mesg.setTitle(params[constants.PARAMS_TITLE]);
+    //
+    //    }
+    //    if (params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
+    //
+    //        mesg.setMessage(params.message[constants.PARAMS_MESSAGE]);
+    //    }
+    //}
+    //else {
+    //    throw "Les paramètres title et msge n'ont pas été saisis";
+    //}
+    //
+    //if (params.hasOwnProperty(constants.PARAMS_DATA)) {
+    //    if (params[constants.PARAMS_DATA].length <= 250) {
+    //        mesg.setParams(params[constants.PARAMS_DATA]);
+    //    }
+    //    else {
+    //        throw "data dépasse 250 caractères";
+    //    }
+    //}
+    //
+    //return mesg;
 
 };
 
@@ -247,21 +256,21 @@ var _buildMessageWindowsPhone = function (params) {
  */
 var _sendWP7Toast = function (message, tokens, callback) {
 
-    var mpns = new Mpns();
-
-    if (!_.isArray(tokens)) {
-        tokens = new Array(tokens);
-    }
-    _.each(tokens, function (elem_token) {
-        message.setTokenMpns(elem_token);
-
-        try {
-            mpns.send(message, callback);
-        } catch (e) {
-            callback(e);
-        }
-
-    });
+    //var mpns = new Mpns();
+    //
+    //if (!_.isArray(tokens)) {
+    //    tokens = new Array(tokens);
+    //}
+    //_.each(tokens, function (elem_token) {
+    //    message.setTokenMpns(elem_token);
+    //
+    //    try {
+    //        mpns.send(message, callback);
+    //    } catch (e) {
+    //        callback(e);
+    //    }
+    //
+    //});
 };
 
 /**
@@ -276,7 +285,7 @@ var _sendWP7Toast = function (message, tokens, callback) {
  * @private
  */
 var _sendWP = function (message, tokens, callback) {
-    var wns = new Wns();
+    var wns = new Wns(log);
     if (!tokens.hasOwnProperty("url")) {
         throw "Error, no endpoint url";
     }
@@ -296,14 +305,21 @@ var _sendWP = function (message, tokens, callback) {
         type          : Wns.types.TOAST,
         template      : "ToastText01",
         payload       : {
-            text : [
+            text  : [
                 message[constants.PARAMS_MESSAGE]
-            ]
+            ],
+            image : []
         }
     };
     wns.send(context, function (err, result) {
         callback(err, result);
-    })
+    });
+    wns.on("transmitted", function (message) {
+        // lol
+    });
+    wns.on("error", function (error) {
+        // lol
+    });
 };
 
 /**
@@ -324,7 +340,7 @@ var _sendIOs = function (message, tokens, config, callback) {
     notification.alert = message.alert;
     _.each(tokens, function (token) {
         var myDevice = new Device(token);
-        apnConnection.pushNotification(notification,myDevice).then(callback);
+        apnConnection.pushNotification(notification, myDevice).then(callback);
     })
 };
 

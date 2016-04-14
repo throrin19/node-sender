@@ -5,12 +5,14 @@
   "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
   "main": "sender.js",
   "dependencies": {
-    "request": "~2.27.0",
-    "underscore": "~1.5.2",
-    "iconv": "~2.0.7",
-    "int-encoder": "~0.1.4",
-    "blackberry-push": "git+https://github.com/fredericosilva/blackberry-push.git",
-    "moment": "~2.4.0"
+    "async": "latest",
+    "bluebird": "^3.3.5",
+    "bunyan": "^1.8.0",
+    "debug": "^2.2.0",
+    "js2xmlparser": "latest",
+    "request": "latest",
+    "underscore": "latest",
+    "winston": "latest"
   },
   "devDependencies": {},
   "repository": {
