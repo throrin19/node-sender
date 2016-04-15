@@ -5,14 +5,13 @@
   "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
   "main": "sender.js",
   "dependencies": {
-    "async": "latest",
     "bluebird": "^3.3.5",
-    "bunyan": "^1.8.0",
     "debug": "^2.2.0",
-    "js2xmlparser": "latest",
-    "request": "latest",
-    "underscore": "latest",
-    "winston": "latest"
+    "async": "^1.5.2",
+    "bunyan": "^1.8.0",
+    "js2xmlparser": "^1.0.0",
+    "request": "^2.70.0",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {},
   "repository": {

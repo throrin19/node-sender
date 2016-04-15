@@ -109,7 +109,6 @@ var _sendAndroid = function (message, tokens, config, callback) {
 //    if(typeof config == 'object' && typeof config[constants.CONFIG_APIKEY] != 'undefined'){
     var gcm = new Gcm();
 //        gcm.setApiKey(config[constants.CONFIG_APIKEY]);
-
     message.clearTokens();
     if (typeof tokens == 'object') {
         _.each(tokens, function (token) {
@@ -133,6 +132,10 @@ var _sendAndroid = function (message, tokens, config, callback) {
         }
     }
 
+    if(!config.hasOwnProperty("ttl") || (config.ttl<0 && config.ttl>2419200)) {
+        config.ttl=3600;
+    }
+    message.setTtl(config.ttl);
     try {
         gcm.send(message, callback);
     } catch (e) {
@@ -278,13 +281,14 @@ var _sendWP7Toast = function (message, tokens, callback) {
  *
  * @param {object} message
  * @param {object} tokens
+ * @param {object} config
  * @param {string[]} tokens.url
  * @param {string} tokens.sid
  * @param {string} tokens.secret
  * @param {function} callback
  * @private
  */
-var _sendWP = function (message, tokens, callback) {
+var _sendWP = function (message, tokens, config, callback) {
     var wns = new Wns(log);
     if (!tokens.hasOwnProperty("url")) {
         throw "Error, no endpoint url";
@@ -299,6 +303,7 @@ var _sendWP = function (message, tokens, callback) {
         throw "Error, no message";
     }
     var context = {
+        ttl           : config.expiry,
         tokenUrl      : tokens.url,
         client_id     : tokens.sid,
         client_secret : tokens.secret,
@@ -334,14 +339,15 @@ var _sendWP = function (message, tokens, callback) {
 var _sendIOs = function (message, tokens, config, callback) {
     var notification = new Notification();
     var apnConnection = new Connection(config);
-    notification.expiry = message.expiry;
+    notification.expiry = Math.floor(Date.now() / 1000) + (config.ttl ? config.ttl : 3600);
     notification.badge = message.badge;
     notification.sound = message.sound;
     notification.alert = message.alert;
-    _.each(tokens, function (token) {
-        var myDevice = new Device(token);
-        apnConnection.pushNotification(notification, myDevice).then(callback);
-    })
+    var myDevices = [];
+    _.each(tokens, (token) => {
+        myDevices.push(new Device(token))
+    });
+    apnConnection.pushNotification(notification, myDevices).then(callback);
 };
 
 module.exports.constants = constants;
@@ -367,7 +373,7 @@ module.exports.send = function (params, callback) { //function(type, message, to
             _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
             break;
         case constants.TYPE_WP :
-            _sendWP(params.message, params.tokens, callback);
+            _sendWP(params.message, params.tokens, params.config, callback);
             break;
         case constants.TYPE_IOS :
             _sendIOs(params.message, params.tokens, params.config, callback);

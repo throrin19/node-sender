@@ -1,7 +1,7 @@
 var Sender = require('../sender');
 
 
-var toto = Sender.send({
+Sender.send({
     type : Sender.constants.TYPE_WP,
     message : {
         msge : "Message "
@@ -10,6 +10,9 @@ var toto = Sender.send({
         sid : "your sid",
         secret : "your secret",
         url : ["tokenUrl,...."]
+    },
+    config : {
+        ttl : 7200 // notification time to live (default = 3600 = 1h)
     }
 
 }, function(err, response){

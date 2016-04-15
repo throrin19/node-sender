@@ -7,7 +7,8 @@ Sender.send({
     },
     tokens : ["your token"],
     config : {
-        apiKey : "GCM Api-KEY"
+        apiKey : "GCM Api-KEY",
+        ttl : 7200 // Expires 2 hour from now, (default = 3600 = 1h)
     }
 }, function(err, response){
     console.log(err);

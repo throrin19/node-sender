@@ -5,13 +5,13 @@ Sender.send({
     message : {
         alert : "your notification",
         badge : 1, //your badge
-        sound : "cat.caf", //your notification sound
-        expiry : Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
+        sound : "cat.caf" //your notification sound
     },
     tokens : ["your token"],
     config : {
         cert : "path to your cert file",
-        key : "path to your key file"
+        key : "path to your key file",
+        ttl : 7200 // Expires 2 hour from now, (default = 3600 = 1h)
     }
 }, function(err, response){
     console.log(err);
