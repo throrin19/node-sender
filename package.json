@@ -2,14 +2,16 @@
   "name": "node-sender",
   "version": "1.0.0",
   "private": true,
-  "description": "Push Notification sender for mobiles (android, windows phone, iphone, blackberry)",
+  "description": "Push Notification sender for mobiles (android, windows phone, iphone)",
   "main": "sender.js",
   "dependencies": {
-    "bluebird": "^3.3.5",
-    "debug": "^2.2.0",
     "async": "^1.5.2",
+    "bluebird": "^3.3.5",
     "bunyan": "^1.8.0",
+    "debug": "^2.2.0",
+    "http2": "^3.3.2",
     "js2xmlparser": "^1.0.0",
+    "node-forge": "^0.6.39",
     "request": "^2.70.0",
     "underscore": "^1.8.3"
   },
@@ -22,7 +24,9 @@
     "push",
     "gcm",
     "notification",
-    "mobile"
+    "mobile",
+    "apn",
+    "wns"
   ],
   "author": "throrin19",
   "license": "BSD",

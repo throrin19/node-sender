@@ -2,24 +2,16 @@
 
 var PushMessageGcm = require('./lib/message/gcm'),
     Gcm = require('./lib/gcm'),
-    PushMessageBpss = require('./lib/message/bpss'),
-    Bpss = require('./lib/bpss'),
+//PushMessageBpss = require('./lib/message/bpss'),
+//Bpss = require('./lib/bpss'),
 //PushMessageMpns = require('./lib/message/mpns.js'),
 //Mpns = require('./lib/mpns'),
     _ = require('underscore'),
     constants = require('./lib/const.js'),
-    ToastMessage = require("./lib/message/mpns/toast"),
+//ToastMessage = require("./lib/message/mpns/toast"),
     Wns = require("./lib/wns"),
-    Device = require("./lib/device"),
-    Connection = require("./lib/connection"),
-    Notification = require("./lib/notification"),
+    Apn = require("./lib/apn"),
     bunyan = require('bunyan');
-
-var log = bunyan.createLogger({
-    name  : "node-sender",
-    level : "debug",
-    src   : true
-});
 
 /**
  * Creating the message
@@ -39,7 +31,7 @@ var log = bunyan.createLogger({
  *     msge : "alert Message"
  *     data : array(
  *          key1 : mixed value,
- *          ...
+ *          ...trace
  *     )
  * }
  * </code></li>
@@ -132,8 +124,8 @@ var _sendAndroid = function (message, tokens, config, callback) {
         }
     }
 
-    if(!config.hasOwnProperty("ttl") || (config.ttl<0 && config.ttl>2419200)) {
-        config.ttl=3600;
+    if (!config.hasOwnProperty("ttl") || (config.ttl < 0 && config.ttl > 2419200)) {
+        config.ttl = 3600;
     }
     message.setTtl(config.ttl);
     try {
@@ -279,39 +271,42 @@ var _sendWP7Toast = function (message, tokens, callback) {
 /**
  * Function called to send a message on WindowsPhone device
  *
- * @param {object} message
- * @param {object} tokens
- * @param {object} config
- * @param {string[]} tokens.url
- * @param {string} tokens.sid
- * @param {string} tokens.secret
+ * @param {object} params
+ * @param {object} params.log
+ * @param {object} params.message
+ * @param {object} params.tokens
+ * @param {object} params.config
+ * @param {string[]} params.tokens.url
+ * @param {string} params.tokens.sid
+ * @param {string} params.tokens.secret
  * @param {function} callback
  * @private
  */
-var _sendWP = function (message, tokens, config, callback) {
-    var wns = new Wns(log);
-    if (!tokens.hasOwnProperty("url")) {
+var _sendWP = function (params, callback) {
+    var wns = new Wns(params.log);
+    if (!params.tokens.hasOwnProperty("url")) {
         throw "Error, no endpoint url";
     }
-    if (!tokens.hasOwnProperty("sid")) {
+    if (!params.tokens.hasOwnProperty("sid")) {
         throw "Error, no SID";
     }
-    if (!tokens.hasOwnProperty("secret")) {
+    if (!params.tokens.hasOwnProperty("secret")) {
         throw "Error, no secret";
     }
-    if (!message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
+    if (!params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
         throw "Error, no message";
     }
     var context = {
-        ttl           : config.expiry,
-        tokenUrl      : tokens.url,
-        client_id     : tokens.sid,
-        client_secret : tokens.secret,
+        log           : params.log,
+        ttl           : (params.config && params.config.expiry) ? params.config.expiry : 3600,
+        tokenUrl      : params.tokens.url,
+        client_id     : params.tokens.sid,
+        client_secret : params.tokens.secret,
         type          : Wns.types.TOAST,
         template      : "ToastText01",
         payload       : {
             text  : [
-                message[constants.PARAMS_MESSAGE]
+                params.message[constants.PARAMS_MESSAGE]
             ],
             image : []
         }
@@ -330,24 +325,33 @@ var _sendWP = function (message, tokens, config, callback) {
 /**
  * Function called to send a message on iOS device
  *
- * @param {object} message
- * @param {string[]} tokens
- * @param {object} config
+ * @param {object} params
+ * @param {object} params.log
+ * @param {object} params.message
+ * @param {object} params.log
+ * @param {string[]} params.tokens
+ * @param {object} params.config
  * @param {function} callback
  * @private
  */
-var _sendIOs = function (message, tokens, config, callback) {
-    var notification = new Notification();
-    var apnConnection = new Connection(config);
-    notification.expiry = Math.floor(Date.now() / 1000) + (config.ttl ? config.ttl : 3600);
-    notification.badge = message.badge;
-    notification.sound = message.sound;
-    notification.alert = message.alert;
+var _sendIOs = function (params, callback) {
+    params.config.log = params.log;
+    var notification = new Apn.Notification();
+    var apnConnection = new Apn.Connection(params.config);
+    notification.expiry = Math.floor(Date.now() / 1000) + (params.config.ttl ? params.config.ttl : 3600);
+    notification.badge = params.message.badge;
+    notification.sound = params.message.sound;
+    notification.alert = params.message.alert;
     var myDevices = [];
-    _.each(tokens, (token) => {
-        myDevices.push(new Device(token))
+    _.each(params.tokens, (token) => {
+        myDevices.push(new Apn.Device(token))
     });
-    apnConnection.pushNotification(notification, myDevices).then(callback);
+    apnConnection.pushNotification(notification, myDevices).then((err, res) => {
+        callback(err, res);
+    });
+    apnConnection.on("error", (err)=> {
+        callback(err);
+    });
 };
 
 module.exports.constants = constants;
@@ -356,6 +360,7 @@ module.exports.constants = constants;
  * Function called to send a message on device(s).
  *
  * @param {object}              params              Sender params
+ * @param {object}              params.log          Sender log
  * @param {string}              params.type         Sender type
  * @param {object}              params.message      Sender Message
  * @param {object|string[]}     params.tokens       Devices tokens
@@ -373,10 +378,10 @@ module.exports.send = function (params, callback) { //function(type, message, to
             _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
             break;
         case constants.TYPE_WP :
-            _sendWP(params.message, params.tokens, params.config, callback);
+            _sendWP(params, callback);
             break;
         case constants.TYPE_IOS :
-            _sendIOs(params.message, params.tokens, params.config, callback);
+            _sendIOs(params, callback);
             break;
         default :
             throw "Unknow Type";
