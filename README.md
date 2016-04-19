@@ -1,7 +1,7 @@
 node-sender
 ===========
 
-NodeJS Library to push on Iphone, Android, WindowsPhone, Blackberry 5+
+NodeJS Library to push on Iphone, Android, WindowsPhone
 
 ## Presentation
 
@@ -25,15 +25,17 @@ npm install node-sender
 var Sender = require('node-sender');
 
 Sender.send({
-    type : Sender.constants.TYPE_ANDROID,           // OS type
-    message : {                                     // message to send
-        msge : "Node Sender Test Message"
+    log     : null,                             // Bunyan logger instance (optional)
+    type    : Sender.constants.TYPE_ANDROID,    // OS type
+    message : {
+        msge : "Test android push"              // message to send
     },
-    tokens : "Registration ID here or array IDs",   // phone(s) registration id(s)
-    config : {                                      // settings
-        apiKey : "GCM Api-KEY"
+    tokens  : ["your token"],                   // phone(s) registration id(s)
+    config  : {
+        apiKey : "GCM Api-KEY",
+        ttl    : 7200                           // Time to live, (optional, default = 3600 = 1h)
     }
-}, function(err, response){                         // callback
+}, function (err, response) {
     console.log(err);
     console.log(response);
 });
@@ -41,15 +43,61 @@ Sender.send({
 
 ### IOS
 
-Coming Soon
+```javascript
+var Sender = require('node-sender');
+
+Sender.send({
+    log     : log,                          // Bunyan logger instance (optional)
+    type    : Sender.constants.TYPE_IOS,    // OS type
+    message : {
+        alert : "your notification",        // message to send
+        badge : 1,                          // your badge
+        sound : "cat.caf"                   // your notification sound
+    },
+    tokens  : ["your token"],               // phone(s) registration id(s)
+    config  : {
+        cert : "path to your cert file",
+        key  : "path to your key file",
+        ttl  : 7200                         // Time to live, (optional, default = 3600 = 1h)
+    }
+}, function (err, response) {
+    console.log(err);
+    console.log(response);
+});
+```
 
 ### Windows Phone
 
-Coming Soon
+```javascript
+var Sender = require('node-sender');
 
-### Blackberry 5+ (Java ME)
+Sender.send({
+    log     : log,                          // Bunyan logger instance (optional)
+    type    : Sender.constants.TYPE_WP,     // OS type
+    message : {
+        msge : "Message "                   // message to send
+    },
+    tokens  : {
+        sid    : "your sid",                // Package Security Identifier (SID)
+        secret : "your secret",             // Secret password
+        url    : ["tokenUrl,...."]          // phone(s) registration id(s)
+    },
+    config  : {
+        ttl : 7200                          // Time to live, (optional, default = 3600 = 1h)
+    }
 
-Coming Soon
+}, function (err, response) {
+    console.log(err);
+    console.log(response);
+});
+```
+
+## TODO
+
+- [ ] Refactor Android push system
+- [ ] Implement Apple Feedback system
+- [ ] Add event pattern to send push fail
+- [ ] Use abstract pattern for the three libs
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/throrin19/node-sender/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 

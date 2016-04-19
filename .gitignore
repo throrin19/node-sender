@@ -1,5 +1,4 @@
 .idea/
-node_modules/
 
 logs/
 
@@ -12,8 +11,8 @@ lib-cov
 *.out
 *.pid
 *.gz
-
+*.pem
+/node_modules
 pids/
 results/
-
 npm-debug.log
