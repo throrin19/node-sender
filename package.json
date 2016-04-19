@@ -1,6 +1,7 @@
 {
   "name": "node-sender",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "engines" : { "node" : ">=4.4.2"},
   "private": true,
   "description": "Push Notification sender for mobiles (android, windows phone, iphone)",
   "main": "sender.js",
