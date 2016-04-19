@@ -283,7 +283,7 @@ var _sendWP7Toast = function (message, tokens, callback) {
  * @private
  */
 var _sendWP = function (params, callback) {
-    var wns = new Wns(params.log);
+    var wns = new Wns({log : params.log});
     if (!params.tokens.hasOwnProperty("url")) {
         throw "Error, no endpoint url";
     }
