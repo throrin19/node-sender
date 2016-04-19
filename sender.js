@@ -11,7 +11,8 @@ var PushMessageGcm = require('./lib/message/gcm'),
 //ToastMessage = require("./lib/message/mpns/toast"),
     Wns = require("./lib/wns"),
     Apn = require("./lib/apn"),
-    bunyan = require('bunyan');
+    bunyan = require('bunyan'),
+    Serializer = require("./lib/util/serializer");
 
 /**
  * Creating the message
@@ -368,14 +369,15 @@ module.exports.constants = constants;
  * @param {function}            callback            Callback Function
  */
 module.exports.send = function (params, callback) { //function(type, message, tokens, config, callback){
+    params.log.addSerializers({frame: Serializer.frameSerializer});
+    params.log.addSerializers({stream: Serializer.streamSerializer});
+    params.log.addSerializers({params: Serializer.paramsSerializer});
     switch (params.type) {
         case constants.TYPE_ANDROID :
-            var buildMsge = _buildMessage(params.type, params.message);
-            _sendAndroid(buildMsge, params.tokens, params.config, callback);
+            _sendAndroid(_buildMessage(params.type, params.message), params.tokens, params.config, callback);
             break;
         case constants.TYPE_BB :
-            var buildMsge = _buildMessage(params.type, params.message);
-            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
+            _sendBlackBerry(_buildMessage(params.type, params.message), params.tokens, params.config, callback);
             break;
         case constants.TYPE_WP :
             _sendWP(params, callback);
