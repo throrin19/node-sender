@@ -14,11 +14,11 @@ Sender.send({
         msge : "Message "                   // message to send
     },
     tokens  : {
-        sid    : "your sid",                // Package Security Identifier (SID)
-        secret : "your secret",             // Secret password
         url    : ["tokenUrl,...."]          // phone(s) registration id(s)
     },
     config  : {
+        sid    : "your sid",                // Package Security Identifier (SID)
+        secret : "your secret",             // Secret password
         ttl : 7200                          // Time to live, (optional, default = 3600 = 1h)
     }
 

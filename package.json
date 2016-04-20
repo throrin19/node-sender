@@ -9,7 +9,6 @@
     "async": "^1.5.2",
     "bluebird": "^3.3.5",
     "bunyan": "^1.8.0",
-    "debug": "^2.2.0",
     "http2": "^3.3.2",
     "js2xmlparser": "^1.0.0",
     "node-forge": "^0.6.39",

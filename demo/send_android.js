@@ -8,10 +8,12 @@ var log = bunyan.createLogger({
 });
 
 Sender.send({
-    log     : null,                             // Bunyan logger instance (optional)
+    log     : log,                              // Bunyan logger instance (optional)
     type    : Sender.constants.TYPE_ANDROID,    // OS type
     message : {
-        msge : "Test android push"              // message to send
+        title       : "your title",             // notification title 
+        body        : "Test android push",      // message to send (optional)
+        anyotherKey : "that you want to send"   // other data you want to send, see GCM doc
     },
     tokens  : ["your token"],                   // phone(s) registration id(s)
     config  : {
