@@ -7,7 +7,7 @@ var log = bunyan.createLogger({
     src   : true
 });
 
-Sender.send({
+var sender = Sender.send({
     log     : log,                          // Bunyan logger instance (optional)
     type    : Sender.constants.TYPE_IOS,    // OS type
     message : {
@@ -22,7 +22,16 @@ Sender.send({
         ttl  : 7200,                        // Time to live, (optional, default = 3600 = 1h)
         production : true                   // If your application is on the production APNS
     }
-}, function (err, response) {
-    console.log(err);
-    console.log(response);
+});
+sender.on("successful", (token) => {
+    // Each successful push triggers this event with the token and message_id.
+});
+sender.on("failed", (err) => {
+    // Each failed push triggers this event with the token and the statusCode or error.
+});
+sender.on("unregistered", (token) => {
+    // Each push where the device is not registered (uninstalled app).
+});
+sender.on("end", (results) => {
+    // Contains success, failed and unregistered notifications responses data (if there are some).
 });
