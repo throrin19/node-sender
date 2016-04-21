@@ -30,9 +30,10 @@ module.exports = function () {
      * @param {string[]}    params.tokens           Devices tokens
      * @param {object}      params.config           Sender Config
      * @param {string}      params.config.apiKey    Sender GCM apiKey
+     * @param {function}    [callback]          Callback function
      * @private
      */
-    Sender.prototype._sendAndroid = function (params) {
+    Sender.prototype._sendAndroid = function (params, callback) {
         var gcm = new Gcm({ log : params.log });
         if (!params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
             throw "Error, no message";
@@ -46,7 +47,11 @@ module.exports = function () {
             tokenUrl : params.tokens,
             apiKey   : params.config.apiKey
         };
-        gcm.send(context);
+        try {
+            gcm.send(context, callback);
+        } catch (err) {
+            callback(err, null);
+        }
         gcm.on("end", this.emit.bind(this, "end"));
         gcm.on("successful", this.emit.bind(this, "successful"));
         gcm.on("failed", this.emit.bind(this, "failed"));
@@ -64,9 +69,10 @@ module.exports = function () {
      * @param {object}      params.config           Sender Config
      * @param {string}      params.config.sid       Package Security Identifier (SID)
      * @param {string}      params.config.secret    Secret password
+     * @param {function}    [callback]              Callback function
      * @private
      */
-    Sender.prototype._sendWP = function (params) {
+    Sender.prototype._sendWP = function (params, callback) {
         var wns = new Wns({ log : params.log });
         if (!params.config.sid) {
             throw "Error, no SID";
@@ -88,7 +94,11 @@ module.exports = function () {
                 ]
             }
         };
-        wns.send(context);
+        try {
+            wns.send(context, callback);
+        } catch (err) {
+            callback(err, null);
+        }
         wns.on("end", this.emit.bind(this, "end"));
         wns.on("successful", this.emit.bind(this, "successful"));
         wns.on("failed", this.emit.bind(this, "failed"));
@@ -102,9 +112,10 @@ module.exports = function () {
      * @param {object}      params.message      Sender Message
      * @param {string[]}    params.tokens       Devices tokens
      * @param {object}      params.config       Sender Config
+     * @param {function}    [callback]          Callback function
      * @private
      */
-    Sender.prototype._sendIOs = function (params) {
+    Sender.prototype._sendIOs = function (params, callback) {
         params.config.log = params.log;
         var notification = new Apn.Notification();
         var apnConnection = new Apn.Connection(params.config);
@@ -116,7 +127,9 @@ module.exports = function () {
         _.each(params.tokens, (token) => {
             myDevices.push(new Apn.Device(token))
         });
-        apnConnection.pushNotification(notification, myDevices);
+        apnConnection.pushNotification(notification, myDevices).then((data)=> {
+            callback(null, data);
+        });
         apnConnection.on("end", this.emit.bind(this, "end"));
         apnConnection.on("successful", this.emit.bind(this, "successful"));
         apnConnection.on("failed", this.emit.bind(this, "failed"));
@@ -133,8 +146,9 @@ module.exports = function () {
      * @param {object}              params.message      Sender Message
      * @param {string[]}            params.tokens       Devices tokens
      * @param {object}              params.config       Sender Config
+     * @param {function}            [callback]          Callback function
      */
-    Sender.send = function send(params) {
+    Sender.send = function send(params, callback) {
         var sender = new Sender();
         if (!params.tokens || params.tokens.length <= 0) {
             throw "Error, no endpoint url";
@@ -144,6 +158,10 @@ module.exports = function () {
         }
         if (!params.message) {
             throw "Error, no message";
+        }
+        if (!_.isFunction(callback)) {
+            callback = () => {
+            }
         }
         if (!params.hasOwnProperty("log")) {
             params.log = {
@@ -173,13 +191,13 @@ module.exports = function () {
         }
         switch (params.type) {
             case constants.TYPE_ANDROID :
-                sender._sendAndroid(params);
+                sender._sendAndroid(params, callback);
                 break;
             case constants.TYPE_WP :
-                sender._sendWP(params);
+                sender._sendWP(params, callback);
                 break;
             case constants.TYPE_IOS :
-                sender._sendIOs(params);
+                sender._sendIOs(params, callback);
                 break;
             default :
                 throw "Unknow Type";
