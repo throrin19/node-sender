@@ -1,11 +1,11 @@
 node-sender
 ===========
 
-NodeJS Library to push on Iphone, Android, WindowsPhone
+NodeJS Library to push on iPhone, Android, WindowsPhone.
 
 ## Presentation
 
-NodeJS-push can be easily and simply send push notifications on major 
+node-sender can be easily and simply send push notifications on major 
 existing mobile systems.
 
 ### License
@@ -128,7 +128,11 @@ var sender = Sender.send({
 });
 ```
 
+[[ Important: If there is a parameters problem, it'll be throw and not send through callback or event system ! ]]
+
 ### How to retrieve the failed/successful notifications
+
+[[ Important: You can't use the both system at the same time ! ]]
 
 #### Callback
 
@@ -175,6 +179,9 @@ var sender = Sender.send({
         secret : "fdognpsdfogopdfgjonfdgodfgn",
     }
 });
+sender.on("error", (err) => {
+    // When there is an error, it triggers this event.
+});
 sender.on("successful", (token) => {
     // Each successful push triggers this event 
     // with the token and message_id.
@@ -192,9 +199,9 @@ sender.on("end", (results) => {
     // notifications responses data 
     // (if there are some).
     
-    // console.log(results.successful);
-    // console.log(results.failed);
-    // console.log(results.unregistered);
+    console.log(results.successful);
+    console.log(results.failed);
+    console.log(results.unregistered);
 });
 ```
 

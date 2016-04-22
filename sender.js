@@ -30,10 +30,9 @@ module.exports = function () {
      * @param {string[]}    params.tokens           Devices tokens
      * @param {object}      params.config           Sender Config
      * @param {string}      params.config.apiKey    Sender GCM apiKey
-     * @param {function}    [callback]          Callback function
      * @private
      */
-    Sender.prototype._sendAndroid = function (params, callback) {
+    Sender.prototype._sendAndroid = function (params) {
         var gcm = new Gcm({ log : params.log });
         if (!params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
             throw "Error, no message";
@@ -47,14 +46,8 @@ module.exports = function () {
             tokenUrl : params.tokens,
             apiKey   : params.config.apiKey
         };
-        try {
-            gcm.send(context, callback);
-        } catch (err) {
-            callback(err, null);
-        }
-        gcm.on("end", this.emit.bind(this, "end"));
-        gcm.on("successful", this.emit.bind(this, "successful"));
-        gcm.on("failed", this.emit.bind(this, "failed"));
+        gcm.send(context);
+        return gcm;
     };
 
     Sender.constants = constants;
@@ -69,10 +62,9 @@ module.exports = function () {
      * @param {object}      params.config           Sender Config
      * @param {string}      params.config.sid       Package Security Identifier (SID)
      * @param {string}      params.config.secret    Secret password
-     * @param {function}    [callback]              Callback function
      * @private
      */
-    Sender.prototype._sendWP = function (params, callback) {
+    Sender.prototype._sendWP = function (params) {
         var wns = new Wns({ log : params.log });
         if (!params.config.sid) {
             throw "Error, no SID";
@@ -94,14 +86,8 @@ module.exports = function () {
                 ]
             }
         };
-        try {
-            wns.send(context, callback);
-        } catch (err) {
-            callback(err, null);
-        }
-        wns.on("end", this.emit.bind(this, "end"));
-        wns.on("successful", this.emit.bind(this, "successful"));
-        wns.on("failed", this.emit.bind(this, "failed"));
+        wns.send(context);
+        return wns;
     };
 
     /**
@@ -112,10 +98,9 @@ module.exports = function () {
      * @param {object}      params.message      Sender Message
      * @param {string[]}    params.tokens       Devices tokens
      * @param {object}      params.config       Sender Config
-     * @param {function}    [callback]          Callback function
      * @private
      */
-    Sender.prototype._sendIOs = function (params, callback) {
+    Sender.prototype._sendIOs = function (params) {
         params.config.log = params.log;
         var notification = new Apn.Notification();
         var apnConnection = new Apn.Connection(params.config);
@@ -127,12 +112,8 @@ module.exports = function () {
         _.each(params.tokens, (token) => {
             myDevices.push(new Apn.Device(token))
         });
-        apnConnection.pushNotification(notification, myDevices).then((data)=> {
-            callback(null, data);
-        });
-        apnConnection.on("end", this.emit.bind(this, "end"));
-        apnConnection.on("successful", this.emit.bind(this, "successful"));
-        apnConnection.on("failed", this.emit.bind(this, "failed"));
+        apnConnection.pushNotification(notification, myDevices);
+        return apnConnection;
     };
 
     module.exports.constants = constants;
@@ -150,6 +131,7 @@ module.exports = function () {
      */
     Sender.send = function send(params, callback) {
         var sender = new Sender();
+        var handled = false;
         if (!params.tokens || params.tokens.length <= 0) {
             throw "Error, no endpoint url";
         }
@@ -158,10 +140,6 @@ module.exports = function () {
         }
         if (!params.message) {
             throw "Error, no message";
-        }
-        if (!_.isFunction(callback)) {
-            callback = () => {
-            }
         }
         if (!params.hasOwnProperty("log")) {
             params.log = {
@@ -189,18 +167,39 @@ module.exports = function () {
         if (isNaN(params.config.ttl) || params.config.ttl < 0 || params.config.ttl > 2419200) {
             params.config.ttl = 3600;
         }
+        let senderLib;
         switch (params.type) {
             case constants.TYPE_ANDROID :
-                sender._sendAndroid(params, callback);
+                senderLib = sender._sendAndroid(params);
                 break;
             case constants.TYPE_WP :
-                sender._sendWP(params, callback);
+                senderLib = sender._sendWP(params);
                 break;
             case constants.TYPE_IOS :
-                sender._sendIOs(params, callback);
+                senderLib = sender._sendIOs(params);
                 break;
             default :
                 throw "Unknow Type";
+        }
+        if (_.isFunction(callback)) {
+            senderLib.once("error", (err)=> {
+                if (!handled) {
+                    callback(err);
+                    handled = true;
+                }
+            });
+            senderLib.on("end", (result)=> {
+                if (!handled) {
+                    callback(null, result);
+                    handled = true;
+                }
+            });
+        } else {
+            senderLib.on("error", sender.emit.bind(sender, "error"));
+            senderLib.on("end", sender.emit.bind(sender, "end"));
+            senderLib.on("successful", sender.emit.bind(sender, "successful"));
+            senderLib.on("failed", sender.emit.bind(sender, "failed"));
+            senderLib.on("unregistered", sender.emit.bind(sender, "unregistered"));
         }
         return sender;
     };
