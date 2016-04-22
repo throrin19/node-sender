@@ -5,7 +5,8 @@ NodeJS Library to push on Iphone, Android, WindowsPhone
 
 ## Presentation
 
-NodeJS-push can be easily and simply send push notifications on major existing mobile systems.
+NodeJS-push can be easily and simply send push notifications on major 
+existing mobile systems.
 
 ### License
 
@@ -31,17 +32,29 @@ var Sender = require('node-sender');
 
 ```javascript
 var sender = Sender.send({
-    log     : log,                                  // Bunyan logger instance (optional)
-    type    : Sender.constants.TYPE_ANDROID,        // OS type
+    log     : log,                                  
+    // Bunyan logger instance (optional)
+    
+    type    : Sender.constants.TYPE_ANDROID,        
+    // OS type
+    
     message : {
-        title         : "your title",               // notification title 
-        body          : "Test android push",        // message to send (optional)
-        any_other_Key : "that you want to send"     // other data you want to send, see GCM's doc
+        title         : "your title",               
+        // notification title 
+        
+        body          : "Test android push",        
+        // message to send (optional)
+        
+        any_other_Key : "that you want to send"     
+        // other data you want to send, see GCM's doc
     },
-    tokens  : ["your token"],                       // phone(s) registration id(s)
+    tokens  : ["your token"],                       
+    // phone(s) registration id(s)
+    
     config  : {
         apiKey : "GCM Api-KEY",
-        ttl    : 7200                               // Time to live, (optional, default = 3600 = 1h)
+        ttl    : 7200                               
+        // Time to live, (optional, default = 3600 = 1h)
     }
 });
 ```
@@ -52,19 +65,34 @@ var sender = Sender.send({
 var Sender = require('node-sender');
 
 var sender = Sender.send({
-    log     : log,                          // Bunyan logger instance (optional)
-    type    : Sender.constants.TYPE_IOS,    // OS type
+    log     : log,                          
+    // Bunyan logger instance (optional)
+    
+    type    : Sender.constants.TYPE_IOS,    
+    // OS type
+    
     message : {
-        alert : "your notification",        // message to send
-        badge : 1,                          // your badge
-        sound : "cat.caf"                   // your notification sound
+        alert : "your notification",        
+        // message to send
+        
+        badge : 1,                          
+        // your badge
+        
+        sound : "cat.caf"                   
+        // your notification sound
     },
-    tokens  : ["your token"],               // phone(s) registration id(s)
+    tokens  : ["your token"],               
+    // phone(s) registration id(s)
+    
     config  : {
         cert : "path to your cert file",
         key  : "path to your key file",
-        ttl  : 7200,                        // Time to live, (optional, default = 3600 = 1h)
-        production : true                   // If your application is on the production APNS
+        
+        ttl  : 7200,                        
+        // Time to live, (optional, default = 3600 = 1h)
+        
+        production : true                   
+        // If your application is on the production APNS
     }
 });
 ```
@@ -73,25 +101,39 @@ var sender = Sender.send({
 
 ```javascript
 var sender = Sender.send({
-    log     : log,                          // Bunyan logger instance (optional)
-    type    : Sender.constants.TYPE_WP,     // OS type
+    log     : log,                          
+    // Bunyan logger instance (optional)
+    
+    type    : Sender.constants.TYPE_WP,     
+    // OS type
+    
     message : {
-        msge : "Message "                   // message to send
+        msge : "Message "                   
+        // message to send
     },
     tokens  : {
-        url : ["tokenUrl,...."]             // phone(s) registration id(s)
+        url : ["tokenUrl,...."]             
+        // phone(s) registration id(s)
     },
     config  : {
-        sid    : "your sid",                // Package Security Identifier (SID)
-        secret : "your secret",             // Secret password
-        ttl    : 7200                       // Time to live, (optional, default = 3600 = 1h)
+        sid    : "your sid",                
+        // Package Security Identifier (SID)
+        
+        secret : "your secret",             
+        // Secret password
+        
+        ttl    : 7200                       
+        // Time to live, (optional, default = 3600 = 1h)
     }
 });
 ```
 
 ### How to retrieve the failed/successful notifications
 
-You can use the callback system like that (the token and config SID/Secret are wrong ;) ):
+#### Callback
+
+You can use the callback system like that 
+(the token and config SID/Secret are wrong ;) )
 
 ```javascript
 Sender.send({
@@ -115,7 +157,9 @@ Sender.send({
 });
 ```
 
-Or you can use the EventEmitter system :
+##### EventEmitter
+
+Or you can use the EventEmitter system
 
 ```javascript
 var sender = Sender.send({
@@ -132,16 +176,22 @@ var sender = Sender.send({
     }
 });
 sender.on("successful", (token) => {
-    // Each successful push triggers this event with the token and message_id.
+    // Each successful push triggers this event 
+    // with the token and message_id.
 });
 sender.on("failed", (error) => {
-    // Each failed push triggers this event with the token and the statusCode or error.
+    // Each failed push triggers this event with the 
+    // token and the statusCode or error.
 });
 sender.on("unregistered", (token) => {
-    // Each push where the device is not registered (uninstalled app) triggers this event instead of "failed" event.
+    // Each push where the device is not registered (uninstalled app) 
+    // triggers this event instead of the "failed" event.
 });
 sender.on("end", (results) => {
-    // Contains success, failed and unregistered arrays of notifications responses data (if there are some).
+    // Contains success, failed and unregistered arrays of 
+    // notifications responses data 
+    // (if there are some).
+    
     // console.log(results.successful);
     // console.log(results.failed);
     // console.log(results.unregistered);
