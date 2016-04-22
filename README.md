@@ -128,11 +128,11 @@ var sender = Sender.send({
 });
 ```
 
-[[ Important: If there is a parameters problem, it'll be throw and not send through callback or event system ! ]]
+:warning: Important: If there is a parameters problem, it'll be throw and not send through callback or event system !
 
 ### How to retrieve the failed/successful notifications
 
-[[ Important: You can't use the both system at the same time ! ]]
+:heavy_exclamation_mark: Important: You can't use the both system at the same time !
 
 #### Callback
 
