@@ -93,6 +93,27 @@ var sender = Sender.send({
 
 You can use the callback system like that (the token and config SID/Secret are wrong ;) ):
 
+```javascript
+Sender.send({
+    type    : Sender.constants.TYPE_WP,
+    message : {
+        msge : "My beautiful notification"
+    },
+    tokens  : {
+        url : ["AOBCIAHJSJAOPFIABFNHAONODBF"]
+    },
+    config  : {
+        sid    : "ogdjqfqopfnsdopbgfdoqfn",
+        secret : "fdognpsdfogopdfgjonfdgodfgn",
+    }
+}, (error, result)=> {
+    if (!error) {
+        console.log(result.successful);
+        console.log(result.failed);
+        console.log(result.unregistered);
+    }
+});
+```
 
 Or you can use the EventEmitter system :
 
@@ -121,15 +142,17 @@ sender.on("unregistered", (token) => {
 });
 sender.on("end", (results) => {
     // Contains success, failed and unregistered arrays of notifications responses data (if there are some).
+    // console.log(results.successful);
+    // console.log(results.failed);
+    // console.log(results.unregistered);
 });
-
 ```
 
 ## TODO
 
 - [X] Refactor Android push system
 - [X] Implement Apple Feedback system
-- [ ] Implement WNS Feedback system
+- [X] Implement WNS Feedback system
 - [X] Implement GCM Feedback system
 - [X] Add event pattern to send push fail
 - [ ] ~~Use abstract pattern for the three libs~~
