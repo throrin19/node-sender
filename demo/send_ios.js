@@ -9,17 +9,18 @@ var log = bunyan.createLogger({
 
 var sender = Sender.send({
     log     : log,                          // Bunyan logger instance (optional)
-    type    : Sender.constants.TYPE_WP,     // OS type
+    type    : Sender.constants.TYPE_IOS,    // OS type
     message : {
-        msge : "Message "                   // message to send
+        alert : "your notification",        // message to send
+        badge : 1,                          // your badge
+        sound : "cat.caf"                   // your notification sound
     },
-    tokens  : {
-        url : ["tokenUrl,...."]             // phone(s) registration id(s)
-    },
+    tokens  : ["your token"],               // phone(s) registration id(s)
     config  : {
-        sid    : "your sid",                // Package Security Identifier (SID)
-        secret : "your secret",             // Secret password
-        ttl    : 7200                       // Time to live, (optional, default = 3600 = 1h)
+        cert : "path to your cert file",
+        key  : "path to your key file",
+        ttl  : 7200,                        // Time to live, (optional, default = 3600 = 1h)
+        production : true                   // If your application is on the production APNS
     }
 });
 sender.on("successful", (token) => {

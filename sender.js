@@ -1,312 +1,208 @@
-var PushMessageGcm  = require('./lib/message/gcm'),
-    Gcm             = require('./lib/gcm'),
-    PushMessageBpss  = require('./lib/message/bpss'),
-    Bpss             = require('./lib/bpss'),
-    PushMessageMpns  = require('./lib/message/mpns.js'),
-    Mpns             = require('./lib/mpns'),
-    _               = require('underscore'),
-    constants       = require('./lib/const.js'),
-    ToastMessage    = require("./lib/message/mpns/toast");
+'use strict';
 
+const Gcm = require('./lib/gcm'),
+    _ = require('underscore'),
+    constants = require('./lib/const.js'),
+    Wns = require("./lib/wns"),
+    Apn = require("./lib/apn"),
+    bunyan = require('bunyan'),
+    util = require("util"),
+    Serializer = require("./lib/util/serializer"),
+    EventEmitter = require("events");
 
+module.exports = function () {
 
-/**
- * Creating the message
- * Returns the message to send.
- *
- * <ul>
- *  <li>For Android, the parameters depend on what is expected by your applications.</li>
- *  <li>For WindowsPhone, the parameters must be entered as follows:
- * <code>
- * {
- *     title : "title",
- *     msge :"messagee",
- *     data : "Data (Uri)"
- * }
- * </code></li>
- * <li>For IOS, the parameters must be entered like this:
- * <code>
- * {
- *     msge : "alert Message"
- *     data : array(
- *          key1 : mixed value,
- *          ...
- *     )
- * }
- * </code></li>
- * <li>For Blackberry, a single data is required:
- * * <code>
- * {
- *      msge : "Message"
- * }
- * </code></li>
- * </ul>
- *
- * @param   {string}            type            Message Type (android|ios|wp|bb5)
- * @param   {object|string}     params          Message params
- * @return  {MessageAbstract}                   Message Object
- * @private
- */
-var _buildMessage = function(type, params){
-    var mesg = null;
-
-    switch(type){
-        case constants.TYPE_ANDROID :
-            mesg = _buildMessageAndroid(params);
-            break;
-
-        case constants.TYPE_BB :
-            mesg = _buildMessageBlackBerry(params);
-            break;
-
-        case constants.TYPE_WP :
-            mesg = _buildMessageWindowsPhone(params);
-            break;
-
-        default :
-            throw "Unknow Type";
+    function Sender(options) {
+        EventEmitter.call(this);
+        if (false === (this instanceof Sender)) {
+            return new Sender(options);
+        }
     }
 
-    return mesg;
-};
+    util.inherits(Sender, EventEmitter);
 
-/**
- * Lets create our preconfigured android messages
- *
- * @param   {string|object}    params           Message Params
- * @returns {PushMessageGcm}                    Message Object
- * @private
- */
-var _buildMessageAndroid = function(params){
-    var mesg = new PushMessageGcm();
-    mesg.setId(new Date().getTime());
-    if(typeof params != 'undefined' && params != null){
-        mesg.setDatas(params);
-    }
+    /**
+     * Function called to send a notification on Android device(s)
+     *
+     * @param {object}      params                  Sender params
+     * @param {object}      params.log              Sender log
+     * @param {object}      params.message          Sender Message
+     * @param {string[]}    params.tokens           Devices tokens
+     * @param {object}      params.config           Sender Config
+     * @param {string}      params.config.apiKey    Sender GCM apiKey
+     * @private
+     */
+    Sender.prototype._sendAndroid = function (params) {
+        var gcm = new Gcm({ log : params.log });
+        if (!params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
+            throw "Error, no message";
+        }
+        if (!params.config.hasOwnProperty("apiKey")) {
+            throw "Error, no apiKey";
+        }
+        var context = {
+            ttl      : params.config.ttl,
+            message  : params.message,
+            tokenUrl : params.tokens,
+            apiKey   : params.config.apiKey
+        };
+        gcm.send(context);
+        return gcm;
+    };
 
-    return mesg;
-};
+    Sender.constants = constants;
 
-/**
- * Function called to send a message on Android device(s)
- *
- * @param {PushMessageGcm}      message             Push Message Object
- * @param {string|Array}        tokens              Push Tokens
- * @param {object}              config              Push Config
- * @param {function}            callback            Callback Function
- * @private
- */
-var _sendAndroid = function(message, tokens, config, callback){
-//    if(typeof config == 'object' && typeof config[constants.CONFIG_APIKEY] != 'undefined'){
-        var gcm = new Gcm();
-//        gcm.setApiKey(config[constants.CONFIG_APIKEY]);
-
-    message.clearTokens();
-    if(typeof tokens == 'object'){
-        _.each(tokens, function(token){
-            var apikey = token.split("@!!@")[1];
-            var item_token  = token.split("@!!@")[0];
-
-            if( typeof apikey != "undefined"){
-                gcm.setApiKey( apikey );
+    /**
+     * Function called to send a notification on WindowsPhone device
+     *
+     * @param {object}      params                  Sender params
+     * @param {object}      params.log              Sender log
+     * @param {object}      params.message          Sender Message
+     * @param {string[]}    params.tokens           Devices tokens
+     * @param {object}      params.config           Sender Config
+     * @param {string}      params.config.sid       Package Security Identifier (SID)
+     * @param {string}      params.config.secret    Secret password
+     * @private
+     */
+    Sender.prototype._sendWP = function (params) {
+        var wns = new Wns({ log : params.log });
+        if (!params.config.sid) {
+            throw "Error, no SID";
+        }
+        if (!params.config.secret) {
+            throw "Error, no secret";
+        }
+        var context = {
+            ttl               : params.config.ttl,
+            tokenUrl          : params.tokens,
+            client_id         : params.config.sid,
+            client_secret     : params.config.secret,
+            notificationClass : "immediate",
+            type              : Wns.types.TOAST,
+            template          : "ToastText01",
+            payload           : {
+                text : [
+                    params.message[constants.PARAMS_MESSAGE]
+                ]
             }
+        };
+        wns.send(context);
+        return wns;
+    };
 
-            message.addToken(item_token);
+    /**
+     * Function called to send a notification on iOS device
+     *
+     * @param {object}      params              Sender params
+     * @param {object}      params.log          Sender log
+     * @param {object}      params.message      Sender Message
+     * @param {string[]}    params.tokens       Devices tokens
+     * @param {object}      params.config       Sender Config
+     * @private
+     */
+    Sender.prototype._sendIOs = function (params) {
+        params.config.log = params.log;
+        var notification = new Apn.Notification();
+        var apnConnection = new Apn.Connection(params.config);
+        notification.expiry = Math.floor(Date.now() / 1000) + params.config.ttl;
+        notification.badge = params.message.badge;
+        notification.sound = params.message.sound;
+        notification.alert = params.message.alert;
+        var myDevices = [];
+        _.each(params.tokens, (token) => {
+            myDevices.push(new Apn.Device(token))
         });
-    }else if(typeof tokens == 'string'){
+        apnConnection.pushNotification(notification, myDevices);
+        return apnConnection;
+    };
 
-        var apikey = tokens.split("@!!@")[1];
-        var item_token  = tokens.split("@!!@")[0];
-        message.addToken(item_token);
+    module.exports.constants = constants;
 
-        if( typeof apikey != "undefined"){
-            gcm.setApiKey( apikey );
+    /**
+     * Function called to send a notification on device(s).
+     *
+     * @param {object}              params              Sender params
+     * @param {object}              [params.log]        Sender log
+     * @param {string}              params.type         Sender type
+     * @param {object}              params.message      Sender Message
+     * @param {string[]}            params.tokens       Devices tokens
+     * @param {object}              params.config       Sender Config
+     * @param {function}            [callback]          Callback function
+     */
+    Sender.send = function send(params, callback) {
+        var sender = new Sender();
+        var handled = false;
+        if (!params.tokens || params.tokens.length <= 0) {
+            throw "Error, no endpoint url";
         }
-    }
-
-
-    try{
-        gcm.send(message, callback);
-    }catch(e){
-        callback(e);
-    }
-};
-
-
-/**
- * Lets create our preconfigured BlackBerry messages
- *
- * @param   {string|object}    params           Message Params
- * @returns {PushMessageGcm}                    Message Object
- * @private
- */
-var _buildMessageBlackBerry = function(params){
-    var mesg = new PushMessageBpss();
-    mesg.setId(new Date().getTime());
-    if(typeof params != 'undefined' && params != null){
-        mesg.setData(params);
-    }
-
-    return mesg;
-};
-
-/**
- * Function called to send a message on BlackBerry device(s)
- *
- * @param {PushMessageBpss}      message             Push Message Object
- * @param {string|Array}        tokens              Push Tokens
- * @param {object}              config              Push Config
- * @param {function}            callback            Callback Function
- * @private
- */
-var _sendBlackBerry = function(message, tokens, config, callback){
-    var result = null;
-    if(
-        config != null  &&
-            config.hasOwnProperty(constants.CONFIG_PASSWORD) &&
-            config.hasOwnProperty(constants.CONFIG_APIKEY)
-
-        )
-    {
-        message.setAppId( config[constants.CONFIG_APIKEY] );
-        bpss = new Bpss();
-        bpss.setApiKey(config[constants.CONFIG_APIKEY]);
-        bpss.setPassword(config[constants.CONFIG_PASSWORD]);
-
-
-        message.clearTokens();
-
-        if( ! _.isArray(tokens) ){
-            tokens = new Array(tokens);
+        if (!params.config) {
+            throw "Error, no config found";
         }
-
-        _.each(tokens , function(token){
-            message.addToken(token);
-        });
-
-//        message.setTokens( tokens );
-
-
-        try{
-            result = bpss.send(message , callback);
-        }catch(e){
-            callback(e);
+        if (!params.message) {
+            throw "Error, no message";
         }
-
-        return result;
-    }else{
-        throw "Les champs de configuration requis pour Blackberry n'ont pas tous été saisis";
-    }
-};
-
-
-/**
- * Lets create our preconfigured BlackBerry messages
- *
- * @param   {string|object}    params           Message Params
- * @returns {PushMessageGcm}                    Message Object
- * @private
- */
-var _buildMessageWindowsPhone = function(params){
-
-    var mesg = new ToastMessage() ;
-
-    if( params.hasOwnProperty( constants.PARAMS_TITLE  ) || params.message.hasOwnProperty( constants.PARAMS_MESSAGE) ){
-
-        if( params.hasOwnProperty( constants.PARAMS_TITLE  ) ){
-            mesg.setTitle( params[constants.PARAMS_TITLE] );
-
+        if (!params.hasOwnProperty("log")) {
+            params.log = {
+                fatal : () => {
+                },
+                error : () => {
+                },
+                warn  : () => {
+                },
+                info  : () => {
+                },
+                debug : () => {
+                },
+                trace : () => {
+                },
+                child : function () {
+                    return this;
+                }
+            };
+        } else {
+            params.log.addSerializers({ frame : Serializer.frameSerializer });
+            params.log.addSerializers({ stream : Serializer.streamSerializer });
+            params.log.addSerializers({ params : Serializer.paramsSerializer });
         }
-        if( params.message.hasOwnProperty( constants.PARAMS_MESSAGE) ){
-
-            mesg.setMessage( params.message[constants.PARAMS_MESSAGE] );
+        if (isNaN(params.config.ttl) || params.config.ttl < 0 || params.config.ttl > 2419200) {
+            params.config.ttl = 3600;
         }
-    }
-    else{
-        throw "Les paramètres title et msge n'ont pas été saisis";
-    }
-
-
-    if( params.hasOwnProperty( constants.PARAMS_DATA )  ){
-        if( params[constants.PARAMS_DATA].length <= 250 ){
-            mesg.setParams(params[constants.PARAMS_DATA]);
+        let senderLib;
+        switch (params.type) {
+            case constants.TYPE_ANDROID :
+                senderLib = sender._sendAndroid(params);
+                break;
+            case constants.TYPE_WP :
+                senderLib = sender._sendWP(params);
+                break;
+            case constants.TYPE_IOS :
+                senderLib = sender._sendIOs(params);
+                break;
+            default :
+                throw "Unknow Type";
         }
-        else{
-            throw "data dépasse 250 caractères";
+        if (_.isFunction(callback)) {
+            senderLib.once("error", (err)=> {
+                if (!handled) {
+                    callback(err);
+                    handled = true;
+                }
+            });
+            senderLib.on("end", (result)=> {
+                if (!handled) {
+                    callback(null, result);
+                    handled = true;
+                }
+            });
+        } else {
+            senderLib.on("error", sender.emit.bind(sender, "error"));
+            senderLib.on("end", sender.emit.bind(sender, "end"));
+            senderLib.on("successful", sender.emit.bind(sender, "successful"));
+            senderLib.on("failed", sender.emit.bind(sender, "failed"));
+            senderLib.on("unregistered", sender.emit.bind(sender, "unregistered"));
         }
-    }
+        return sender;
+    };
 
-    return mesg;
-
-};
-
-/**
- * Function called to send a message on BlackBerry device(s)
- *
- * @param {PushMessageBpss}      message             Push Message Object
- * @param {string|Array}        tokens              Push Tokens
- * @param {object}              config              Push Config
- * @param {function}            callback            Callback Function
- * @private
- */
-var _sendWP7Toast = function(message, tokens,  callback){
-
-    var mpns = new Mpns();
-
-    if( ! _.isArray(tokens)){
-        tokens = new Array(tokens);
-    }
-
-
-    _.each( tokens, function( elem_token ){
-        message.setTokenMpns(elem_token);
-
-        try{
-            mpns.send( message , callback );
-        }catch(e){
-            callback(e);
-        }
-
-    });
-
-
-};
-
-
-
-module.exports.constants = constants;
-
-/**
- * Function called to send a message on device(s).
- *
- * @param {object}              params              Sender params
- * @param {string}              params.type         Sender type
- * @param {object}              params.message      Sender Message
- * @param {Array|string}        params.tokens       Devices tokens
- * @param {object}              params.config       Sender Config
- * @param {function}            callback            Callback Function
- */
-module.exports.send = function(params, callback){ //function(type, message, tokens, config, callback){
-
-
-
-    switch(params.type){
-        case constants.TYPE_ANDROID :
-            var buildMsge = _buildMessage(params.type, params.message);
-            _sendAndroid(buildMsge, params.tokens, params.config, callback);
-            break;
-
-        case constants.TYPE_BB :
-
-            var buildMsge = _buildMessage(params.type, params.message);
-            _sendBlackBerry(buildMsge, params.tokens, params.config, callback);
-            break;
-
-        case constants.TYPE_WP :
-            var buildMsge = _buildMessage(params.type, params);
-            _sendWP7Toast(buildMsge, params.tokens, callback);
-            break;
-        default :
-            throw "Unknow Type";
-    }
+    return Sender;
 };
