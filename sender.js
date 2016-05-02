@@ -34,8 +34,8 @@ module.exports = function () {
      */
     Sender.prototype._sendAndroid = function (params) {
         var gcm = new Gcm({ log : params.log });
-        if (!params.message.hasOwnProperty(constants.PARAMS_MESSAGE)) {
-            throw "Error, no message";
+        if (!params.message.hasOwnProperty(constants.PARAMS_TITLE)) {
+            throw "Error, no title";
         }
         if (!params.config.hasOwnProperty("apiKey")) {
             throw "Error, no apiKey";
